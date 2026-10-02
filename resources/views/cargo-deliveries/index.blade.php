@@ -21,7 +21,7 @@
     <section class="kilometer-table-card">
         <div class="kilometer-table-wrap">
             <table class="kilometer-table cargo-table">
-                <thead><tr><th>NGÀY</th><th>TÊN XUẤT PHIẾU</th><th>NHÓM</th><th>ĐỊA CHỈ</th><th>SỐ CHUYẾN</th><th>SỐ BAO</th><th>SỐ KG</th><th>SỐ KM</th><th>CHÀNH</th><th>XE ÔM</th><th>THÔNG TIN GHI BAO</th><th>GHI CHÚ</th><th>DUYỆT ĐƠN</th><th>TÁC VỤ</th></tr></thead>
+                <thead><tr><th>NGÀY</th><th>DUYỆT ĐƠN</th><th>TÊN XUẤT PHIẾU</th><th>NHÓM</th><th>ĐỊA CHỈ</th><th>SỐ CHUYẾN</th><th>SỐ BAO</th><th>SỐ KG</th><th>SỐ KM</th><th>CHÀNH</th><th>XE ÔM</th><th>THÔNG TIN GHI BAO</th><th>GHI CHÚ</th><th>TÁC VỤ</th></tr></thead>
                 <tbody id="cargo-deliveries-tbody">
                     @forelse ($deliveries as $delivery)
                         @include('cargo-deliveries._row', ['delivery' => $delivery])
@@ -286,32 +286,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             dynamicModalsContainer.insertAdjacentHTML('beforeend', result.modal_html);
                         }
 
-                        // 4. Reset item-specific fields (keep date & employee & trip count)
-                        form.querySelectorAll('input[name="group_id"]').forEach(function(radio) {
-                            radio.checked = false;
-                        });
-
-                        const packageCountInput = form.querySelector('input[name="package_count"]');
-                        if (packageCountInput) packageCountInput.value = '';
-
-                        const weightInput = form.querySelector('input[name="weight_kg"]');
-                        if (weightInput) weightInput.value = '';
-
-                        const noteTextarea = form.querySelector('textarea[name="note"]');
-                        if (noteTextarea) noteTextarea.value = '';
-
-                        form.querySelectorAll('[data-cargo-kilometer-search]').forEach(function(inp) {
-                            inp.value = '';
-                        });
-
-                        form.querySelectorAll('.cargo-kilometer-option').forEach(function(opt) {
-                            opt.hidden = false;
-                            opt.classList.remove('is-hidden');
-                            opt.style.removeProperty('display');
-                        });
-
-                        const emptyMsg = form.querySelector('.cargo-kilometer-empty');
-                        if (emptyMsg) emptyMsg.style.display = 'none';
+                        // 4. Giữ lại data toàn bộ các field theo yêu cầu:
+                        // Tên chở hàng, Chọn nhân viên, Số chuyến, Số bao, Số kg, Ghi chú, Thông tin danh sách giao hàng
+                        if (alertDiv) {
+                            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
 
                     } else {
                         let errorMsg = result.message || 'Có lỗi xảy ra khi lưu thông tin. Vui lòng kiểm tra lại.';

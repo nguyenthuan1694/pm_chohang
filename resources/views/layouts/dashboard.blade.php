@@ -11,6 +11,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
+    <!-- Anti-flicker: Restore sidebar collapse state before render -->
+    <script>
+        (function() {
+            try {
+                if (localStorage.getItem('thl_sidebar_collapsed') === 'true') {
+                    document.documentElement.classList.add('sidebar-collapsed');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     @stack('styles')
 
@@ -46,22 +57,42 @@
             background: linear-gradient(180deg, #193a77 0%, #122852 100%) !important;
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 2px 0 12px rgba(25, 58, 119, 0.12);
-            transition: all 0.25s ease;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), flex 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            will-change: width;
+            position: relative;
+        }
+
+        .dashboard-main {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            will-change: width;
+        }
+
+        /* HEADER ROW (BRAND & TOGGLE BUTTON) */
+        .sidebar-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin: 0 0.15rem 1.75rem;
+            transition: all 0.3s ease;
         }
 
         /* BRAND & LOGO */
         .dashboard-sidebar-brand {
             display: inline-flex;
             align-items: center;
-            gap: 0.75rem;
-            margin: 0 0.25rem 2rem;
-            padding: 0.5rem 0.65rem;
+            gap: 0.65rem;
+            margin: 0;
+            padding: 0.45rem 0.6rem;
             color: #ffffff !important;
             text-decoration: none;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
             transition: all 0.2s ease;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
         }
 
         .dashboard-sidebar-brand:hover {
@@ -87,10 +118,12 @@
             text-align: left;
             line-height: 1.2;
             min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .thl-sidebar-brand-name {
-            font-size: 1.02rem;
+            font-size: 0.96rem;
             font-weight: 900;
             color: #ffffff !important;
             letter-spacing: 0.03em;
@@ -98,12 +131,53 @@
         }
 
         .thl-sidebar-brand-sub {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
             color: #bed6fd !important;
             letter-spacing: 0.07em;
             text-transform: uppercase;
             white-space: nowrap;
+        }
+
+        /* SIDEBAR COLLAPSE TOGGLE BUTTON (<< & >>) */
+        .sidebar-collapse-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-collapse-toggle-btn:hover {
+            background: #ffffff;
+            color: #193a77;
+            border-color: #ffffff;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+            transform: scale(1.05);
+        }
+
+        .sidebar-collapse-toggle-btn:active {
+            transform: scale(0.96);
+        }
+
+        .sidebar-collapse-toggle-btn .toggle-icon-collapse {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-collapse-toggle-btn .toggle-icon-expand {
+            display: none;
+            align-items: center;
+            justify-content: center;
         }
 
         /* SECTION LABELS */
@@ -375,6 +449,94 @@
             border-color: #193a77 !important;
             box-shadow: 0 4px 12px rgba(25, 58, 119, 0.2) !important;
         }
+        /* COLLAPSED SIDEBAR RULES (DESKTOP) */
+        @media (min-width: 768px) {
+            html.sidebar-collapsed .dashboard-sidebar,
+            body.sidebar-collapsed .dashboard-sidebar {
+                flex: 0 0 74px !important;
+                width: 74px !important;
+                padding: 1.25rem 0.55rem 1.25rem !important;
+                overflow-x: hidden !important;
+            }
+
+            html.sidebar-collapsed .dashboard-main,
+            body.sidebar-collapsed .dashboard-main {
+                width: calc(100% - 74px) !important;
+            }
+
+            html.sidebar-collapsed .sidebar-header-row,
+            body.sidebar-collapsed .sidebar-header-row {
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 0.65rem !important;
+                margin: 0 0 1.25rem !important;
+            }
+
+            html.sidebar-collapsed .dashboard-sidebar-brand,
+            body.sidebar-collapsed .dashboard-sidebar-brand {
+                margin: 0 !important;
+                padding: 0.3rem !important;
+                justify-content: center !important;
+                width: 44px !important;
+                height: 44px !important;
+                flex: none !important;
+            }
+
+            html.sidebar-collapsed .thl-sidebar-brand-text,
+            body.sidebar-collapsed .thl-sidebar-brand-text,
+            html.sidebar-collapsed .dashboard-nav-label,
+            body.sidebar-collapsed .dashboard-nav-label,
+            html.sidebar-collapsed .sidebar-section-label,
+            body.sidebar-collapsed .sidebar-section-label,
+            html.sidebar-collapsed .sidebar-quote,
+            body.sidebar-collapsed .sidebar-quote {
+                display: none !important;
+            }
+
+            html.sidebar-collapsed .dashboard-nav-link,
+            body.sidebar-collapsed .dashboard-nav-link {
+                justify-content: center !important;
+                padding: 0.65rem 0 !important;
+                gap: 0 !important;
+            }
+
+            html.sidebar-collapsed .dashboard-nav-link:hover,
+            body.sidebar-collapsed .dashboard-nav-link:hover {
+                transform: translateY(-2px) !important;
+            }
+
+            html.sidebar-collapsed .dashboard-nav-icon,
+            body.sidebar-collapsed .dashboard-nav-icon {
+                margin: 0 !important;
+            }
+
+            html.sidebar-collapsed .sidebar-collapse-toggle-btn,
+            body.sidebar-collapsed .sidebar-collapse-toggle-btn {
+                width: 36px !important;
+                height: 32px !important;
+            }
+
+            html.sidebar-collapsed .sidebar-collapse-toggle-btn .toggle-icon-collapse,
+            body.sidebar-collapsed .sidebar-collapse-toggle-btn .toggle-icon-collapse {
+                display: none !important;
+            }
+
+            html.sidebar-collapsed .sidebar-collapse-toggle-btn .toggle-icon-expand,
+            body.sidebar-collapsed .sidebar-collapse-toggle-btn .toggle-icon-expand {
+                display: inline-flex !important;
+            }
+        }
+
+        .orders-full-layout .sidebar-collapse-toggle-btn {
+            display: none !important;
+        }
+
+        @media (max-width: 767.98px) {
+            .sidebar-collapse-toggle-btn {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="dashboard-body {{ request()->routeIs('orders.*') ? 'orders-full-layout' : '' }}">
@@ -398,5 +560,51 @@
             @endunless
         </div>
     </div>
+
+    <!-- Script điều khiển thu gọn / mở rộng menu Sidebar -->
+    <script>
+        (function() {
+            function initSidebarToggle() {
+                var btn = document.getElementById('sidebarCollapseToggleBtn');
+                if (!btn) return;
+
+                function setSidebarState(collapsed) {
+                    if (collapsed) {
+                        document.documentElement.classList.add('sidebar-collapsed');
+                        document.body.classList.add('sidebar-collapsed');
+                        btn.setAttribute('title', 'Mở rộng menu (>>)');
+                        btn.setAttribute('aria-label', 'Mở rộng menu (>>)');
+                        btn.setAttribute('aria-expanded', 'false');
+                    } else {
+                        document.documentElement.classList.remove('sidebar-collapsed');
+                        document.body.classList.remove('sidebar-collapsed');
+                        btn.setAttribute('title', 'Thu gọn menu (<<)');
+                        btn.setAttribute('aria-label', 'Thu gọn menu (<<)');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }
+                }
+
+                // Đồng bộ trạng thái ban đầu
+                var isInitiallyCollapsed = document.documentElement.classList.contains('sidebar-collapsed');
+                setSidebarState(isInitiallyCollapsed);
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var willBeCollapsed = !document.documentElement.classList.contains('sidebar-collapsed');
+                    setSidebarState(willBeCollapsed);
+                    try {
+                        localStorage.setItem('thl_sidebar_collapsed', willBeCollapsed ? 'true' : 'false');
+                    } catch (err) {}
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initSidebarToggle);
+            } else {
+                initSidebarToggle();
+            }
+        })();
+    </script>
 </body>
 </html>
