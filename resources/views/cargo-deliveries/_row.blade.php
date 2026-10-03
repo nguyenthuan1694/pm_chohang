@@ -1,4 +1,4 @@
-<tr id="delivery-row-{{ $delivery->id }}">
+<tr id="delivery-row-{{ $delivery->id }}" data-trip-count="{{ $delivery->trip_count }}">
     <td class="date-cell">{{ $delivery->delivery_date->format('d/m/Y H:i') }}</td>
     <td>
         <form method="POST" action="{{ route('cargo-deliveries.status', $delivery) }}">

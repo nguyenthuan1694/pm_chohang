@@ -36,6 +36,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		createModal.addEventListener('hidden.bs.modal', resetCreateKilometerForm);
 	}
 
+	document.querySelectorAll('[data-kilometer-create-copy]').forEach((button) => {
+		button.addEventListener('click', () => {
+			const form = button.closest('form.kilometer-form');
+			const dateInput = form?.querySelector('input[name="date"]');
+
+			if (!form || !dateInput) {
+				return;
+			}
+
+			form.action = button.dataset.createAction;
+			form.querySelector('input[name="_method"]')?.remove();
+			dateInput.value = button.dataset.systemDate;
+			form.requestSubmit();
+		});
+	});
+
 	const createEmployeeModal = document.getElementById('createEmployeeModal');
 
 	if (createEmployeeModal) {

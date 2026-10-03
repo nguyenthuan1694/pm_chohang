@@ -1,6 +1,7 @@
 @php
     $kilometer = $kilometer ?? null;
     $isEditing = $kilometer !== null;
+    $showCreateCopyButton = $showCreateCopyButton ?? false;
     $formAction = $formAction ?? route('kilometers.store');
     $formMethod = $formMethod ?? 'POST';
     $fieldValue = fn (string $field, mixed $default = '') => $isEditing
@@ -57,6 +58,15 @@
     </div>
 
     <div class="kilometer-modal-actions">
+        @if ($showCreateCopyButton)
+            <button
+                type="button"
+                class="btn kilometer-submit-button"
+                data-kilometer-create-copy
+                data-create-action="{{ route('kilometers.store') }}"
+                data-system-date="{{ now()->format('Y-m-d') }}"
+            >Th&#234;m m&#7899;i kilomet</button>
+        @endif
         <button type="button" class="btn kilometer-cancel-button" data-bs-dismiss="modal">Đóng</button>
         <button type="submit" class="btn kilometer-submit-button">{{ $kilometer ? 'Lưu thay đổi' : 'Thêm mới' }}</button>
     </div>

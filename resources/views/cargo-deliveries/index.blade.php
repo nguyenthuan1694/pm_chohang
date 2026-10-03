@@ -273,8 +273,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const tr = emptyRow.closest('tr');
                                 if (tr) tr.remove();
                             }
-                            tbody.insertAdjacentHTML('afterbegin', result.row_html);
-                            const newRow = tbody.querySelector('tr:first-child');
+                            const rowTemplate = document.createElement('template');
+                            rowTemplate.innerHTML = result.row_html.trim();
+                            const newRow = rowTemplate.content.firstElementChild;
+                            const newTripCount = Number(newRow?.dataset.tripCount);
+                            const rowToInsertBefore = Array.from(tbody.querySelectorAll('tr[data-trip-count]'))
+                                .find((row) => Number(row.dataset.tripCount) > newTripCount);
+
+                            if (newRow) {
+                                tbody.insertBefore(newRow, rowToInsertBefore || null);
+                            }
+
                             if (newRow) {
                                 newRow.classList.add('row-newly-added');
                             }

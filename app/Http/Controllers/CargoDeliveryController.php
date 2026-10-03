@@ -34,15 +34,16 @@ class CargoDeliveryController extends Controller
                         ->orWhereHas('employee', fn ($employee) => $employee->where('name', 'like', "%{$search}%"));
                 });
             })
-            ->latest('delivery_date')
-            ->latest('id')
+            ->orderBy('trip_count')
+            ->oldest('updated_at')
+            ->oldest('id')
             ->paginate(10)
             ->withQueryString();
 
         $groups = Group::query()
             ->where('status', 'active')
-            ->latest('group_date')
-            ->latest('id')
+            ->oldest('group_date')
+            ->oldest('id')
             ->get();
 
         return view('cargo-deliveries.index', [
@@ -74,7 +75,7 @@ class CargoDeliveryController extends Controller
 
         if ($request->expectsJson() || $request->ajax()) {
             $cargoDelivery->load(['employee', 'kilometer']);
-            $groups = Group::query()->where('status', 'active')->latest('group_date')->latest('id')->get();
+            $groups = Group::query()->where('status', 'active')->oldest('group_date')->oldest('id')->get();
             $employees = Employee::query()->orderBy('name')->get();
 
             return response()->json([

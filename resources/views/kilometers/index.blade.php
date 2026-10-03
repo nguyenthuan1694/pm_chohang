@@ -63,7 +63,7 @@
 
     <section class="kilometer-table-card">
         <div class="kilometer-table-wrap">
-            <table class="kilometer-table">
+            <table class="kilometer-table kilometer-directory-table {{ auth()->user()->isAdmin() ? 'kilometer-directory-table-admin' : 'kilometer-directory-table-group' }}">
                 <thead>
                     <tr>
                         <th>NGÀY</th>
@@ -75,7 +75,7 @@
                         <th>QUẬN</th>
                         <th class="text-end">KM</th>
                         <th class="text-end">TIỀN CHÀNH</th>
-                        <th>XE ÔM</th>
+                        <!-- <th>XE ÔM</th> -->
                         <th>THÔNG TIN GHI BAO</th>
                         <th>TÁC VỤ</th>
                     </tr>
@@ -98,7 +98,7 @@
                             <td>{{ $kilometer->district }}</td>
                             <td class="number-cell">{{ number_format((float) $kilometer->distance_km, 2, ',', '.') }}</td>
                             <td class="money-cell">{{ number_format((float) $kilometer->carrier_fee, 0, ',', '.') }} đ</td>
-                            <td>{{ $kilometer->motorbike_driver ?: '—' }}</td>
+                            <!-- <td>{{ $kilometer->motorbike_driver ?: '—' }}</td> -->
                             <td class="note-cell">{{ $kilometer->package_note ?: '—' }}</td>
                             <td>
                                 @php
@@ -162,7 +162,7 @@
                     <div><span class="panel-kicker">Edit record</span><h2 class="modal-title" id="editKilometerModalLabel-{{ $kilometer->id }}">Sửa kilomet</h2></div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
-                <div class="modal-body">@include('kilometers._form', ['kilometer' => $kilometer, 'formAction' => route('kilometers.update', $kilometer), 'formMethod' => 'PUT'])</div>
+                <div class="modal-body">@include('kilometers._form', ['kilometer' => $kilometer, 'formAction' => route('kilometers.update', $kilometer), 'formMethod' => 'PUT', 'showCreateCopyButton' => true])</div>
             </div>
         </div>
     </div>

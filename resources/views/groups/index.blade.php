@@ -18,12 +18,12 @@
 
     <section class="kilometer-table-card">
         <div class="kilometer-table-wrap">
-            <table class="kilometer-table group-table">
+            <table class="kilometer-table group-table group-directory-table">
                 <thead><tr><th>NGÀY</th><th>TÊN XUẤT PHIẾU</th><th>NHÓM</th><th>ĐỊA CHỈ</th><th>PHƯỜNG</th><th>QUẬN</th><th>KM</th><th>TIỀN CHÀNH</th><th>XE ÔM</th><th>THÔNG TIN GHI BAO</th><th>TRẠNG THÁI</th><th>TÁC VỤ</th></tr></thead>
                 <tbody>
                     @forelse ($groups as $group)
                         <tr>
-                            <td class="date-cell">{{ $group->group_date->format('d/m/Y H:i') }}</td><td><strong>{{ $group->invoice_name }}</strong></td><td><span class="group-badge">{{ $group->group_name }}</span></td><td class="address-cell">{{ $group->address }}</td><td>{{ $group->ward }}</td><td>{{ $group->district }}</td><td class="number-cell">{{ number_format((float) $group->distance_km, 2, ',', '.') }}</td><td class="money-cell">{{ number_format((float) $group->carrier_fee, 0, ',', '.') }} đ</td><td>{{ $group->motorbike_driver ?: '—' }}</td><td class="note-cell">{{ $group->package_note ?: '—' }}</td>
+                            <td class="date-cell"><span>{{ $group->group_date->format('d/m/Y') }}</span><small>{{ $group->group_date->format('H:i') }}</small></td><td><strong>{{ $group->invoice_name }}</strong></td><td><span class="group-badge">{{ $group->group_name }}</span></td><td class="address-cell">{{ $group->address }}</td><td>{{ $group->ward }}</td><td>{{ $group->district }}</td><td class="number-cell">{{ number_format((float) $group->distance_km, 2, ',', '.') }}</td><td class="money-cell">{{ number_format((float) $group->carrier_fee, 0, ',', '.') }} đ</td><td>{{ $group->motorbike_driver ?: '—' }}</td><td class="note-cell">{{ $group->package_note ?: '—' }}</td>
                             <td><form method="POST" action="{{ route('groups.status', $group) }}">@csrf @method('PATCH')<select name="status" class="group-status-select status-{{ $group->status }}" onchange="this.form.submit()" @disabled($group->status === 'active')><option value="inactive" @selected($group->status === 'inactive')>Chưa Active</option><option value="active" @selected($group->status === 'active')>Active</option></select></form></td>
                             <td><div class="kilometer-actions"><button type="button" class="kilometer-action-button edit" data-bs-toggle="modal" data-bs-target="#editGroupModal-{{ $group->id }}">Sửa</button> @if($group->status === 'inactive')<form method="POST" action="{{ route('groups.destroy', $group) }}" onsubmit="return confirm('Bạn có chắc muốn xóa nhóm này?');">@csrf @method('DELETE')<button type="submit" class="kilometer-action-button delete">Xóa</button></form>@endif</div></td>
                         </tr>
