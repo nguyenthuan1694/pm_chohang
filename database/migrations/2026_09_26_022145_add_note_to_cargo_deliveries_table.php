@@ -20,9 +20,17 @@ return new class extends Migration
 
         // Cập nhật lại thông tin ghi bao chuẩn từ bảng groups
         DB::statement('
-            UPDATE cargo_deliveries cd
-            JOIN `groups` g ON cd.group_id = g.id
-            SET cd.package_note = g.package_note
+            UPDATE cargo_deliveries
+            SET package_note = (
+                SELECT `groups`.package_note
+                FROM `groups`
+                WHERE `groups`.id = cargo_deliveries.group_id
+            )
+            WHERE EXISTS (
+                SELECT 1
+                FROM `groups`
+                WHERE `groups`.id = cargo_deliveries.group_id
+            )
         ');
     }
 

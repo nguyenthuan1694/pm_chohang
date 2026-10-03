@@ -50,10 +50,18 @@ class GroupController extends Controller
             ->latest('date')
             ->latest('id')
             ->get();
+        $invoiceSuggestions = $this->scopedGroups()
+            ->with('kilometer')
+            ->whereNotNull('invoice_name')
+            ->where('invoice_name', '<>', '')
+            ->latest('group_date')
+            ->latest('id')
+            ->get();
 
         return view('groups.index', [
             'groups' => $groups,
             'kilometers' => $kilometers,
+            'invoiceSuggestions' => $invoiceSuggestions,
             'search' => $search,
         ]);
     }

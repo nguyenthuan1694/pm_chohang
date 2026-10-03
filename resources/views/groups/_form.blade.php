@@ -27,7 +27,71 @@
         </div>
         <div class="group-form-field group-form-field-wide">
             <label for="group-invoice-{{ $group?->id ?? 'new' }}">Tên xuất phiếu</label>
-            <input id="group-invoice-{{ $group?->id ?? 'new' }}" name="invoice_name" type="text" value="{{ old('invoice_name', $group?->invoice_name) }}" required placeholder="Nhập tên xuất phiếu">
+            <div class="group-invoice-combobox" data-group-invoice-combobox>
+                <input
+                    id="group-invoice-{{ $group?->id ?? 'new' }}"
+                    name="invoice_name"
+                    type="text"
+                    value="{{ old('invoice_name', $group?->invoice_name) }}"
+                    required
+                    placeholder="Tìm tên đã có hoặc nhập tên xuất phiếu mới"
+                    autocomplete="off"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="group-invoice-options-{{ $group?->id ?? 'new' }}"
+                    data-group-invoice-input
+                >
+                <div
+                    id="group-invoice-options-{{ $group?->id ?? 'new' }}"
+                    class="group-invoice-options"
+                    data-group-invoice-options
+                    role="listbox"
+                    hidden
+                >
+                    @foreach ($invoiceSuggestions as $suggestion)
+                        @php
+                            $suggestionKilometer = $suggestion->kilometer;
+                            $kilometerLabel = $suggestionKilometer
+                                ? implode(' · ', array_filter([
+                                    $suggestionKilometer->address,
+                                    $suggestionKilometer->ward,
+                                    $suggestionKilometer->district,
+                                    number_format((float) $suggestionKilometer->distance_km, 2, ',', '.') . ' km',
+                                    number_format((float) $suggestionKilometer->carrier_fee, 0, ',', '.') . ' đ',
+                                    $suggestionKilometer->package_note ? 'Ghi bao: ' . $suggestionKilometer->package_note : null,
+                                ]))
+                                : '';
+                            $suggestionParts = array_filter([
+                                $suggestion->address,
+                                'Phường ' . $suggestion->ward,
+                                'Quận ' . $suggestion->district,
+                                number_format((float) $suggestion->distance_km, 2, ',', '.') . ' km',
+                                'Tiền chành ' . number_format((float) $suggestion->carrier_fee, 0, ',', '.') . ' đ',
+                                'Ghi bao: ' . ($suggestion->package_note ?: '—'),
+                            ]);
+                        @endphp
+                        <button
+                            type="button"
+                            class="group-invoice-option"
+                            role="option"
+                            data-invoice="{{ $suggestion->invoice_name }}"
+                            data-kilometer-id="{{ $suggestion->kilometer_id }}"
+                            data-group-name="{{ $suggestion->group_name }}"
+                            data-search="{{ $suggestion->invoice_name }}"
+                            data-label="{{ $kilometerLabel }}"
+                        >
+                            <strong>{{ $suggestion->invoice_name }}</strong>
+                            <span class="group-badge">{{ $suggestion->group_name }}</span>
+                            <small>{{ implode(' · ', $suggestionParts) }}</small>
+                        </button>
+                    @endforeach
+                    <p class="group-invoice-empty" data-group-invoice-empty hidden>
+                        Chưa có tên này trong nhóm. Bạn có thể nhập tên mới rồi chọn thông tin địa chỉ / kilomet bên dưới.
+                    </p>
+                </div>
+            </div>
+            <small class="group-form-help">Chọn tên có sẵn để tự lấy địa chỉ / kilomet tương ứng, hoặc nhập tên xuất phiếu mới.</small>
         </div>
         <div class="group-form-field group-form-field-wide">
             <label for="group-kilometer-{{ $group?->id ?? 'new' }}">Thông tin địa chỉ / kilomet</label>
@@ -48,8 +112,23 @@
                                 $parts[] = 'Ghi bao: ' . $kilometer->package_note;
                             }
                             $optionLabel = implode(' · ', $parts);
+                            $searchParts = array_filter([
+                                $kilometer->address,
+                                $kilometer->ward,
+                                'phường ' . $kilometer->ward,
+                                $kilometer->district,
+                                'quận ' . $kilometer->district,
+                                (string) $kilometer->distance_km,
+                                number_format((float) $kilometer->distance_km, 2, ',', '.'),
+                                'km ' . number_format((float) $kilometer->distance_km, 2, ',', '.'),
+                                $kilometer->carrier_fee,
+                                'tiền chành ' . number_format((float) $kilometer->carrier_fee, 0, ',', '.'),
+                                $kilometer->package_note,
+                                'ghi bao ' . $kilometer->package_note,
+                            ]);
+                            $optionSearch = implode(' ', $searchParts);
                         @endphp
-                        <option value="{{ $kilometer->id }}" data-label="{{ $optionLabel }}" data-search="{{ strtolower($optionLabel) }}" @selected((string) old('kilometer_id', $group?->kilometer_id) === (string) $kilometer->id)>{{ $optionLabel }}</option>
+                        <option value="{{ $kilometer->id }}" data-label="{{ $optionLabel }}" data-search="{{ $optionSearch }}" @selected((string) old('kilometer_id', $group?->kilometer_id) === (string) $kilometer->id)>{{ $optionLabel }}</option>
                     @endforeach
                 </select>
                 <div id="group-kilometer-options-{{ $group?->id ?? 'new' }}" class="group-kilometer-options" data-group-kilometer-options></div>

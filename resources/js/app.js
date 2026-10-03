@@ -387,8 +387,20 @@ document.addEventListener('DOMContentLoaded', () => {
 		const options = Array.from(select.options).filter((option) => option.value);
 
 		const renderOptions = (term = '') => {
-			const matches = options.filter((option) => option.dataset.search.includes(term.toLowerCase()));
-			optionsContainer.innerHTML = matches.map((option) => `<button type="button" class="group-kilometer-option" data-value="${option.value}">${option.dataset.label}</button>`).join('');
+			const terms = normalizeSearchText(term).split(/\s+/).filter(Boolean);
+			const matches = options.filter((option) => {
+				const searchText = normalizeSearchText(option.dataset.search || option.dataset.label);
+				return terms.every((searchTerm) => searchText.includes(searchTerm));
+			});
+			optionsContainer.replaceChildren();
+			matches.forEach((option) => {
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'group-kilometer-option';
+				button.dataset.value = option.value;
+				button.textContent = option.dataset.label;
+				optionsContainer.append(button);
+			});
 			optionsContainer.hidden = matches.length === 0;
 		};
 
