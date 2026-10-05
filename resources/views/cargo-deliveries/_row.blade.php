@@ -1,14 +1,15 @@
 <tr id="delivery-row-{{ $delivery->id }}" data-trip-count="{{ $delivery->trip_count }}">
     <td class="date-cell">{{ $delivery->delivery_date->format('d/m/Y H:i') }}</td>
     <td>
-        <form method="POST" action="{{ route('cargo-deliveries.status', $delivery) }}">
+        <form method="POST" action="{{ route('cargo-deliveries.status', $delivery) }}" data-cargo-status-form>
             @csrf
             @method('PATCH')
-            <select name="delivery_status" class="delivery-status-select status-{{ $delivery->delivery_status }}" onchange="this.form.submit()">
+            <select name="delivery_status" class="delivery-status-select status-{{ $delivery->delivery_status }}">
                 <option value="pending" @selected($delivery->delivery_status === 'pending')>Chưa giao</option>
                 <option value="delivered" @selected($delivery->delivery_status === 'delivered')>Đã giao</option>
                 <option value="failed" @selected($delivery->delivery_status === 'failed')>Đang giao</option>
             </select>
+            <small class="cargo-status-feedback" data-cargo-status-feedback role="status" aria-live="polite" hidden></small>
         </form>
     </td>
     <td><strong>{{ $delivery->invoice_name }}</strong><small class="table-subtext">{{ $delivery->employee?->name }}</small></td>

@@ -183,6 +183,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    document.addEventListener('change', async function(e) {
+        const select = e.target;
+        if (!select || !select.matches('[data-cargo-status-form] select[name="delivery_status"]')) return;
+
+        const form = select.form;
+        const feedback = form.querySelector('[data-cargo-status-feedback]');
+        const statusClasses = ['status-pending', 'status-delivered', 'status-failed', 'status-delivering'];
+        select.classList.remove(...statusClasses);
+        select.classList.add(`status-${select.value}`);
+        const formData = new FormData(form);
+        select.disabled = true;
+        if (feedback) {
+            feedback.hidden = true;
+            feedback.textContent = '';
+        }
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Không thể cập nhật trạng thái đơn.');
+            }
+            select.value = result.delivery_status;
+            select.classList.remove(...statusClasses);
+            select.classList.add(`status-${result.delivery_status}`);
+            if (feedback) {
+                feedback.textContent = result.message;
+                feedback.hidden = false;
+            }
+        } catch (error) {
+            console.error('Không thể cập nhật trạng thái đơn.', error);
+        } finally {
+            select.disabled = false;
+        }
+    });
+
     const createModal = document.getElementById('createCargoModal');
     if (createModal) {
         const form = createModal.querySelector('form.cargo-delivery-form');

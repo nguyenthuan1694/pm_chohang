@@ -112,7 +112,7 @@ class CargoDeliveryController extends Controller
         return to_route('cargo-deliveries.index')->with('status', 'Đã cập nhật thông tin chở hàng.');
     }
 
-    public function updateStatus(Request $request, CargoDelivery $cargoDelivery): RedirectResponse
+    public function updateStatus(Request $request, CargoDelivery $cargoDelivery): RedirectResponse|JsonResponse
     {
         $statusLabels = [
             'pending' => 'Chưa giao',
@@ -133,6 +133,15 @@ class CargoDeliveryController extends Controller
             action: 'status',
             subject: $cargoDelivery,
         );
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã cập nhật trạng thái đơn.',
+                'delivery_status' => $cargoDelivery->delivery_status,
+                'delivery_status_label' => $newStatus,
+            ]);
+        }
 
         return to_route('cargo-deliveries.index')->with('status', 'Đã cập nhật trạng thái đơn.');
     }
