@@ -495,7 +495,8 @@ body {
 // BẢNG ĐƠN HÀNG CỠ CHỮ 22PX, TIÊU ĐỀ 24PX MÀU ĐEN ĐẬM
 .order-table-large {
     width: 100%;
-    min-width: 1400px;
+    min-width: 0;
+    table-layout: fixed;
     font-size: 22px !important;
     border-collapse: collapse;
     
@@ -508,7 +509,8 @@ body {
         border-bottom: 2px solid #b8cbce !important;
         letter-spacing: 0 !important;
         text-transform: uppercase !important;
-        white-space: nowrap;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
     
     td {
@@ -518,6 +520,8 @@ body {
         vertical-align: middle !important;
         line-height: 1.5 !important;
         color: #17221f;
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
     
     tbody tr:hover {
@@ -564,6 +568,38 @@ body {
         span {
             font-size: 20px !important;
         }
+    }
+
+    .order-status-large {
+        min-width: 0;
+        padding: .35rem .45rem !important;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .order-group-badge {
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    th:nth-child(1), td:nth-child(1) { width: 17%; }
+    th:nth-child(2), td:nth-child(2) { width: 19%; }
+    th:nth-child(3), td:nth-child(3) { width: 13%; }
+    th:nth-child(4), td:nth-child(4) { width: 16%; }
+    th:nth-child(5), td:nth-child(5) { width: 17%; }
+    th:nth-child(6), td:nth-child(6) { width: 18%; }
+}
+
+.order-table-stage-pure .kilometer-table-wrap {
+    overflow-x: hidden;
+}
+
+@media (max-width: 767.98px) {
+    .order-table-large th,
+    .order-table-large td {
+        padding-right: .35rem !important;
+        padding-left: .35rem !important;
     }
 }
 
