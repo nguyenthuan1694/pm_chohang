@@ -21,9 +21,36 @@ class CargoDeliveryController extends Controller
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search', ''));
+        $date = trim((string) $request->query('date', ''));
+        $fromDate = trim((string) $request->query('from_date', ''));
+        $toDate = trim((string) $request->query('to_date', ''));
 
         $deliveries = CargoDelivery::query()
             ->with(['employee', 'kilometer'])
+            ->when($date !== '', function ($query) use ($date) {
+                try {
+                    $parsed = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $query->whereDate('delivery_date', $parsed);
+                } catch (\Throwable) {
+                    $query->whereDate('delivery_date', $date);
+                }
+            })
+            ->when($fromDate !== '', function ($query) use ($fromDate) {
+                try {
+                    $parsed = \Carbon\Carbon::parse($fromDate)->format('Y-m-d');
+                    $query->whereDate('delivery_date', '>=', $parsed);
+                } catch (\Throwable) {
+                    $query->whereDate('delivery_date', '>=', $fromDate);
+                }
+            })
+            ->when($toDate !== '', function ($query) use ($toDate) {
+                try {
+                    $parsed = \Carbon\Carbon::parse($toDate)->format('Y-m-d');
+                    $query->whereDate('delivery_date', '<=', $parsed);
+                } catch (\Throwable) {
+                    $query->whereDate('delivery_date', '<=', $toDate);
+                }
+            })
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('invoice_name', 'like', "%{$search}%")
@@ -32,6 +59,17 @@ class CargoDeliveryController extends Controller
                         ->orWhere('package_note', 'like', "%{$search}%")
                         ->orWhere('note', 'like', "%{$search}%")
                         ->orWhereHas('employee', fn ($employee) => $employee->where('name', 'like', "%{$search}%"));
+
+                    if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $search, $m)) {
+                        $formattedDate = sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+                        $query->orWhereDate('delivery_date', $formattedDate);
+                    } elseif (preg_match('/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/', $search, $m)) {
+                        $formattedDate = sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
+                        $query->orWhereDate('delivery_date', $formattedDate);
+                    } elseif (preg_match('/^(\d{1,2})[\/\-](\d{1,2})$/', $search, $m)) {
+                        $formattedDate = sprintf('%04d-%02d-%02d', now()->year, $m[2], $m[1]);
+                        $query->orWhereDate('delivery_date', $formattedDate);
+                    }
                 });
             })
             ->orderBy('trip_count')
@@ -51,6 +89,9 @@ class CargoDeliveryController extends Controller
             'employees' => Employee::query()->orderBy('name')->get(),
             'groups' => $groups,
             'search' => $search,
+            'date' => $date,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
         ]);
     }
 

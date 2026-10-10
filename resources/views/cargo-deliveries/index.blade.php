@@ -14,7 +14,17 @@
     </div>
 
     <section class="kilometer-toolbar">
-        <form method="GET" action="{{ route('cargo-deliveries.index') }}" class="kilometer-search-form"><label class="visually-hidden" for="cargo-search">Tìm kiếm</label><span class="search-icon" aria-hidden="true">⌕</span><input id="cargo-search" name="search" type="search" value="{{ $search }}" placeholder="Tìm tên phiếu, nhân viên, nhóm, địa chỉ...">@if ($search !== '')<a class="clear-search" href="{{ route('cargo-deliveries.index') }}">×</a>@endif<button type="submit" class="kilometer-search-button">Tìm kiếm</button></form>
+        <form method="GET" action="{{ route('cargo-deliveries.index') }}" class="kilometer-search-form">
+            <label class="visually-hidden" for="cargo-date">Tìm theo ngày</label>
+            <input id="cargo-date" name="date" type="date" value="{{ $date }}" class="cargo-date-filter-input" title="Tìm theo ngày" aria-label="Tìm theo ngày">
+            <label class="visually-hidden" for="cargo-search">Tìm kiếm</label>
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="cargo-search" name="search" type="search" value="{{ $search }}" placeholder="Tìm tên phiếu, nhân viên, nhóm, địa chỉ...">
+            @if ($search !== '' || $date !== '' || $fromDate !== '' || $toDate !== '')
+                <a class="clear-search" href="{{ route('cargo-deliveries.index') }}" title="Xóa tìm kiếm" aria-label="Xóa tìm kiếm">×</a>
+            @endif
+            <button type="submit" class="kilometer-search-button">Tìm kiếm</button>
+        </form>
         <span class="kilometer-updated">Cập nhật {{ now()->format('d/m/Y') }}</span>
     </section>
 
@@ -26,7 +36,7 @@
                     @forelse ($deliveries as $delivery)
                         @include('cargo-deliveries._row', ['delivery' => $delivery])
                     @empty
-                        <tr class="empty-table-row"><td colspan="14" class="empty-table-cell"><strong>Chưa có thông tin chở hàng</strong><span>{{ $search !== '' ? 'Không tìm thấy dữ liệu phù hợp.' : 'Dữ liệu sẽ hiển thị sau khi được thêm.' }}</span></td></tr>
+                        <tr class="empty-table-row"><td colspan="14" class="empty-table-cell"><strong>Chưa có thông tin chở hàng</strong><span>{{ ($search !== '' || $date !== '' || $fromDate !== '' || $toDate !== '') ? 'Không tìm thấy dữ liệu phù hợp.' : 'Dữ liệu sẽ hiển thị sau khi được thêm.' }}</span></td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -118,6 +128,39 @@
     border-radius: 6px;
     font-size: .82rem;
     font-weight: 700;
+}
+.cargo-page .kilometer-search-form {
+    max-width: 760px;
+}
+.cargo-date-filter-input {
+    flex: 0 0 auto !important;
+    width: 145px !important;
+    min-width: 130px !important;
+    padding: .48rem .65rem !important;
+    font-size: .82rem !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 6px !important;
+    background: #f8faf8 !important;
+    color: var(--ink) !important;
+    outline: 0 !important;
+    margin-right: .35rem !important;
+    cursor: pointer;
+    transition: all .15s ease !important;
+}
+.cargo-date-filter-input:focus {
+    border-color: var(--mint-deep) !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 .15rem rgba(36, 107, 75, .12) !important;
+}
+@media (max-width: 767.98px) {
+    .cargo-page .kilometer-search-form {
+        flex-wrap: wrap;
+        gap: .4rem;
+    }
+    .cargo-date-filter-input {
+        width: 100% !important;
+        margin-right: 0 !important;
+    }
 }
 </style>
 
