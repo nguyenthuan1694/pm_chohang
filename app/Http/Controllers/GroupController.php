@@ -20,7 +20,7 @@ class GroupController extends Controller
     {
         $search = trim((string) $request->query('search', ''));
         $groups = $this->scopedGroups()
-            ->with('kilometer')
+            ->with(['kilometer', 'latestCargoDelivery'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('invoice_name', 'like', "%{$search}%")
@@ -199,7 +199,7 @@ class GroupController extends Controller
         if ($user?->role === 'group') {
             $owns = ($group->owner_user_id && $group->owner_user_id === $user->id)
                 || ($user->group_id && (int) $group->group_id === (int) $user->group_id)
-                || ($user->group_id && str_contains($group->group_name, (string) $user->group_id))
+                || ($user->group_id && in_array(trim((string) $group->group_name), ['Nhóm ' . $user->group_id, (string) $user->group_id]))
                 || ($user->name && $group->group_name === $user->name)
                 || ($group->id === $user->group_id);
 
