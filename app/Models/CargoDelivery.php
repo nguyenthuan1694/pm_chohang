@@ -64,4 +64,19 @@ class CargoDelivery extends Model
             default => 'Chưa giao',
         };
     }
+
+    public function getEffectiveDeliveryDateAttribute(): ?\Illuminate\Support\Carbon
+    {
+        if (!empty($this->note) && preg_match('/(\d{1,2})[\/\-](\d{1,2})/', $this->note, $matches)) {
+            $day = (int) $matches[1];
+            $month = (int) $matches[2];
+            $year = (int) now()->year;
+            if (checkdate($month, $day, $year)) {
+                $time = $this->delivery_date ? $this->delivery_date->format('H:i:s') : '00:00:00';
+                return \Illuminate\Support\Carbon::createFromFormat('Y-m-d H:i:s', sprintf('%04d-%02d-%02d %s', $year, $month, $day, $time));
+            }
+        }
+
+        return $this->delivery_date;
+    }
 }

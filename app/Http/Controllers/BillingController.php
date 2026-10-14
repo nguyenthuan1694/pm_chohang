@@ -40,24 +40,28 @@ class BillingController extends Controller
 
         $viewMode = $request->input('view_mode', 'daily'); // 'daily' or 'detail'
 
+        $dateSql = $this->getNoteDateSql();
+
         // Query only delivered cargo deliveries
         $query = CargoDelivery::with(['employee', 'group'])
             ->where('delivery_status', 'delivered');
 
         if ($fromDate) {
-            $query->whereDate('delivery_date', '>=', $fromDate);
+            $query->whereRaw("{$dateSql} >= ?", [$fromDate]);
         }
         if ($toDate) {
-            $query->whereDate('delivery_date', '<=', $toDate);
+            $query->whereRaw("{$dateSql} <= ?", [$toDate]);
         }
         if ($employeeId) {
             $query->where('employee_id', $employeeId);
         }
 
-        $deliveries = $query->orderBy('delivery_date', 'asc')
+        $deliveries = $query->orderByRaw("{$dateSql} asc")
             ->orderBy('trip_count', 'asc')
             ->orderBy('id', 'asc')
             ->get();
+
+        $this->applyEffectiveDeliveryDate($deliveries);
 
         $calculationResult = $this->calculateBillingData($deliveries);
 
@@ -96,23 +100,27 @@ class BillingController extends Controller
 
         $mode = $request->input('mode', 'standard'); // 'standard' (Bang Tinh Chanh & KM), 'daily' (Tong hop theo ngay)
 
+        $dateSql = $this->getNoteDateSql();
+
         $query = CargoDelivery::with(['employee', 'group'])
             ->where('delivery_status', 'delivered');
 
         if ($fromDate) {
-            $query->whereDate('delivery_date', '>=', $fromDate);
+            $query->whereRaw("{$dateSql} >= ?", [$fromDate]);
         }
         if ($toDate) {
-            $query->whereDate('delivery_date', '<=', $toDate);
+            $query->whereRaw("{$dateSql} <= ?", [$toDate]);
         }
         if ($employeeId) {
             $query->where('employee_id', $employeeId);
         }
 
-        $deliveries = $query->orderBy('delivery_date', 'asc')
+        $deliveries = $query->orderByRaw("{$dateSql} asc")
             ->orderBy('trip_count', 'asc')
             ->orderBy('id', 'asc')
             ->get();
+
+        $this->applyEffectiveDeliveryDate($deliveries);
 
         $calculationResult = $this->calculateBillingData($deliveries);
 
@@ -548,5 +556,29 @@ class BillingController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
+    }
+
+    /**
+     * Build the raw SQL expression to extract the date from note (formatted as d/m) + current year,
+     * falling back to delivery_date if note does not contain a valid date.
+     */
+    private function getNoteDateSql(?int $year = null): string
+    {
+        $year = $year ?? (int) now()->year;
+        return "COALESCE(STR_TO_DATE(CONCAT(REPLACE(REGEXP_SUBSTR(note, '[0-9]{1,2}[/-][0-9]{1,2}'), '-', '/'), '/', {$year}), '%d/%m/%Y'), DATE(delivery_date))";
+    }
+
+    /**
+     * Map the effective delivery date derived from note + current year onto delivery_date in memory
+     * so that calculations and displays group trips and days consistently.
+     */
+    private function applyEffectiveDeliveryDate($deliveries)
+    {
+        $deliveries->each(function ($item) {
+            if ($effectiveDate = $item->effective_delivery_date) {
+                $item->delivery_date = $effectiveDate;
+            }
+        });
+        return $deliveries;
     }
 }
