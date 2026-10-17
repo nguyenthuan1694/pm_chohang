@@ -25,7 +25,18 @@
     <td class="note-cell">{{ $delivery->note ?: '—' }}</td>
     <td>
         <div class="kilometer-actions">
-            <button type="button" class="kilometer-action-button edit" data-bs-toggle="modal" data-bs-target="#editCargoModal-{{ $delivery->id }}">Sửa</button>
+            <button type="button" 
+                class="kilometer-action-button edit" 
+                data-bs-toggle="modal" 
+                data-bs-target="#editCargoModal"
+                data-update-url="{{ route('cargo-deliveries.update', $delivery) }}"
+                data-date="{{ $delivery->delivery_date?->format('d/m/Y H:i') }}"
+                data-employee-id="{{ $delivery->employee_id }}"
+                data-trip-count="{{ $delivery->trip_count }}"
+                data-package-count="{{ $delivery->package_count }}"
+                data-weight-kg="{{ $delivery->weight_kg }}"
+                data-note="{{ $delivery->note }}"
+                data-group-id="{{ $delivery->group_id }}">Sửa</button>
             <form method="POST" action="{{ route('cargo-deliveries.destroy', $delivery) }}" onsubmit="return confirm('Bạn có chắc muốn xóa thông tin này?');">
                 @csrf
                 @method('DELETE')

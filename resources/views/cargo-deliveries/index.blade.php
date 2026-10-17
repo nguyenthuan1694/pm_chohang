@@ -47,10 +47,7 @@
 
 <div class="modal fade" id="createCargoModal" tabindex="-1" aria-labelledby="createCargoModalLabel" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content kilometer-modal-content"><div class="modal-header"><div><span class="panel-kicker">New cargo record</span><h2 class="modal-title" id="createCargoModalLabel">Thêm thông tin giao hàng</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div><div class="modal-body">@include('cargo-deliveries._form', ['delivery' => null, 'isEditing' => false])</div></div></div></div>
 
-@foreach ($deliveries as $delivery)
-    @include('cargo-deliveries._edit_modal', ['delivery' => $delivery, 'employees' => $employees, 'groups' => $groups])
-@endforeach
-<div id="dynamic-edit-modals"></div>
+<div class="modal fade" id="editCargoModal" tabindex="-1" aria-labelledby="editCargoModalLabel" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content kilometer-modal-content"><div class="modal-header"><div><span class="panel-kicker">Edit cargo record</span><h2 class="modal-title" id="editCargoModalLabel">Sửa thông tin chở hàng</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button></div><div class="modal-body">@include('cargo-deliveries._form', ['delivery' => null, 'isEditing' => true, 'formAction' => '', 'formMethod' => 'PUT', 'employees' => $employees, 'groups' => $groups])</div></div></div></div>
 
 <style>
 .cargo-kilometer-table-wrap {
@@ -105,6 +102,8 @@
     min-width: 0 !important;
     width: 100% !important;
     box-sizing: border-box;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 45px;
 }
 .cargo-kilometer-option:hover { border-color: var(--mint); background: #fbfdfb; }
 .cargo-kilometer-option:has(input:checked) { background: #eaf5ec; border-color: var(--mint-deep); }
@@ -208,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let visibleCount = 0;
 
         options.forEach(function(opt) {
-            const searchKey = normalizeSearchText(opt.dataset.search || '');
+            const searchKey = opt.dataset.search || '';
             const matched = terms.every(function(t) {
                 return searchKey.includes(t);
             });
@@ -380,13 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
 
-                        // 3. Append dynamic edit modal
-                        if (result.modal_html) {
-                            const dynamicModalsContainer = document.getElementById('dynamic-edit-modals') || document.body;
-                            dynamicModalsContainer.insertAdjacentHTML('beforeend', result.modal_html);
-                        }
-
-                        // 4. Giữ lại data toàn bộ các field theo yêu cầu:
+                        // 3. Giữ lại data toàn bộ các field theo yêu cầu:
                         // Tên chở hàng, Chọn nhân viên, Số chuyến, Số bao, Số kg, Ghi chú, Thông tin danh sách giao hàng
                         if (alertDiv) {
                             alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -421,6 +414,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    }
+
+    const editModal = document.getElementById('editCargoModal');
+    if (editModal) {
+        const editForm = editModal.querySelector('form.cargo-delivery-form');
+        editModal.addEventListener('show.bs.modal', function(event) {
+            const btn = event.relatedTarget;
+            if (!btn || !editForm) return;
+
+            editForm.action = btn.dataset.updateUrl || '';
+
+            const dateInput = editForm.querySelector('#delivery-date-edit');
+            if (dateInput) dateInput.value = btn.dataset.date || '';
+
+            const empSelect = editForm.querySelector('#employee-edit');
+            if (empSelect) empSelect.value = btn.dataset.employeeId || '';
+
+            const tripInput = editForm.querySelector('#trip-count-edit');
+            if (tripInput) tripInput.value = btn.dataset.tripCount || '1';
+
+            const pkgInput = editForm.querySelector('#package-count-edit');
+            if (pkgInput) pkgInput.value = btn.dataset.packageCount || '';
+
+            const weightInput = editForm.querySelector('#weight-kg-edit');
+            if (weightInput) weightInput.value = btn.dataset.weightKg || '';
+
+            const noteInput = editForm.querySelector('#delivery-note-edit');
+            if (noteInput) noteInput.value = btn.dataset.note || '';
+
+            // Reset search in edit modal
+            editForm.querySelectorAll('[data-cargo-kilometer-search]').forEach(function(inp) {
+                inp.value = '';
+            });
+            const options = editForm.querySelectorAll('.cargo-kilometer-option');
+            options.forEach(function(opt) {
+                opt.hidden = false;
+                opt.classList.remove('is-hidden');
+                opt.style.removeProperty('display');
+            });
+            const emptyMsg = editForm.querySelector('.cargo-kilometer-empty');
+            if (emptyMsg) emptyMsg.style.display = 'none';
+
+            // Select matching radio
+            const targetGroupId = btn.dataset.groupId;
+            let matchedRadio = null;
+            editForm.querySelectorAll('input[name="group_id"]').forEach(function(radio) {
+                const isMatch = String(radio.value) === String(targetGroupId);
+                radio.checked = isMatch;
+                if (isMatch) matchedRadio = radio;
+            });
+
+            if (matchedRadio) {
+                const optionLabel = matchedRadio.closest('.cargo-kilometer-option');
+                if (optionLabel) {
+                    setTimeout(function() {
+                        optionLabel.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+                    }, 50);
+                }
+            }
+        });
     }
 });
 </script>

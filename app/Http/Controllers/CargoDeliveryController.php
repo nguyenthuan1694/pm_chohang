@@ -45,6 +45,18 @@ class CargoDeliveryController extends Controller
             ->withQueryString();
 
         $groups = Group::query()
+            ->select([
+                'id',
+                'group_date',
+                'invoice_name',
+                'group_name',
+                'address',
+                'ward',
+                'district',
+                'distance_km',
+                'motorbike_driver',
+                'package_note',
+            ])
             ->where('status', 'active')
             ->oldest('group_date')
             ->oldest('id')
@@ -80,19 +92,12 @@ class CargoDeliveryController extends Controller
 
         if ($request->expectsJson() || $request->ajax()) {
             $cargoDelivery->load(['employee', 'kilometer']);
-            $groups = Group::query()->where('status', 'active')->oldest('group_date')->oldest('id')->get();
-            $employees = Employee::query()->orderBy('name')->get();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Đã thêm thông tin chở hàng thành công.',
                 'delivery' => $cargoDelivery,
                 'row_html' => view('cargo-deliveries._row', ['delivery' => $cargoDelivery])->render(),
-                'modal_html' => view('cargo-deliveries._edit_modal', [
-                    'delivery' => $cargoDelivery,
-                    'employees' => $employees,
-                    'groups' => $groups,
-                ])->render(),
             ]);
         }
 
