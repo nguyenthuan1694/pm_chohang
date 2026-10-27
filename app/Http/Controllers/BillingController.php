@@ -124,10 +124,11 @@ class BillingController extends Controller
 
         $calculationResult = $this->calculateBillingData($deliveries);
 
-        // Fallback to CSV if ZipArchive extension is not enabled yet in web server
-        if (!class_exists('ZipArchive')) {
-            return $this->exportCsvFallback($mode, $calculationResult);
-        }
+        abort_unless(
+            class_exists(\ZipArchive::class),
+            503,
+            'Không thể xuất file .xlsx: vui lòng bật extension ZIP trong PHP.',
+        );
 
         // Thin border style
         $thinBorder = new Border(
@@ -478,84 +479,6 @@ class BillingController extends Controller
                 'total_distance_km' => round($grandTotalKm, 2),
             ],
         ];
-    }
-
-    /**
-     * Fallback CSV export with UTF-8 BOM when ZipArchive extension is not enabled.
-     */
-    private function exportCsvFallback(string $mode, array $calculationResult)
-    {
-        $filename = ($mode === 'daily' ? 'BANG_TINH_KILOMET_THEO_NGAY_' : 'BANG_TINH_CHANH_VA_KILOMET_') . now()->format('Ymd_His') . '.csv';
-
-        return response()->streamDownload(function () use ($mode, $calculationResult) {
-            $handle = fopen('php://output', 'w');
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF)); // Write UTF-8 BOM
-
-            if ($mode === 'daily') {
-                fputcsv($handle, [
-                    'STT', 'NGÀY', 'TÊN CHỞ HÀNG', 'LOẠI NHÂN VIÊN', 'SỐ CHUYẾN',
-                    'SỐ ĐIỂM GIAO', 'SỐ BAO', 'SỐ KG', 'TIỀN CHÀNH (VNĐ)', 'TỔNG KM TÍNH TIỀN', 'XE ÔM'
-                ]);
-
-                $stt = 1;
-                foreach ($calculationResult['daily_summaries'] as $day) {
-                    fputcsv($handle, [
-                        $stt++,
-                        $day->date_formatted,
-                        $day->employee_name,
-                        $day->is_support ? 'Hỗ trợ (0km đầu)' : 'Thường (trừ 2km đầu)',
-                        $day->trip_count,
-                        $day->order_count,
-                        $day->package_count_text,
-                        $day->total_weight_kg,
-                        $day->total_carrier_fee,
-                        $day->total_distance_km,
-                        $day->motorbike_driver,
-                    ]);
-                }
-
-                fputcsv($handle, [
-                    'TỔNG CỘNG', $calculationResult['totals']['total_days'] . ' ngày', '', '',
-                    $calculationResult['totals']['total_trips'] . ' chuyến',
-                    $calculationResult['totals']['total_orders'] . ' điểm', '',
-                    $calculationResult['totals']['total_weight_kg'],
-                    $calculationResult['totals']['total_carrier_fee'],
-                    $calculationResult['totals']['total_distance_km'], ''
-                ]);
-            } else {
-                fputcsv($handle, [
-                    'NGÀY', 'NHÓM', 'CHÀNH XE - CỬA HÀNG', 'ĐỊA CHỈ', 'PHƯỜNG', 'QUẬN',
-                    'KM GỐC', 'TIỀN CHÀNH GỐC', 'TÊN CHỞ HÀNG', 'SỐ CHUYẾN', 'SỐ BAO', 'SỐ KG',
-                    'TIỀN CHÀNH TÍNH', 'TỔNG KM TÍNH', 'XE ÔM', 'THÔNG TIN GHI BAO'
-                ]);
-
-                foreach ($calculationResult['all_details'] as $item) {
-                    fputcsv($handle, [
-                        $item->delivery_date ? $item->delivery_date->format('d/m/Y') : '',
-                        $item->group_name,
-                        $item->invoice_name,
-                        $item->address,
-                        $item->ward,
-                        $item->district,
-                        $item->distance_km,
-                        $item->carrier_fee,
-                        $item->employee?->name ?? '',
-                        $item->trip_count,
-                        $item->package_count,
-                        $item->weight_kg,
-                        $item->calculated_carrier_fee,
-                        $item->calculated_km,
-                        $item->motorbike_driver,
-                        $item->package_note,
-                    ]);
-                }
-            }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-        ]);
     }
 
     /**

@@ -111,6 +111,8 @@
 .cargo-kilometer-option.is-hidden {
     display: none !important;
 }
+.cargo-group-searches { display: flex; gap: .5rem; }
+.cargo-group-search-input { width: 180px; }
 .cargo-option-invoice { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .cargo-option-group { white-space: nowrap; }
 .cargo-option-address { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -181,36 +183,21 @@ document.addEventListener('DOMContentLoaded', function() {
             .trim();
     }
 
-    document.addEventListener('input', function(e) {
-        const input = e.target;
-        if (!input || !input.matches('[data-cargo-kilometer-search]')) return;
-
-        const form = input.closest('.cargo-delivery-form');
-        if (!form) return;
-
-        const rawTerm = input.value.trim();
+    const filterGroupOptions = function(form) {
         const options = form.querySelectorAll('.cargo-kilometer-option');
         const emptyMsg = form.querySelector('.cargo-kilometer-empty');
-
-        if (!rawTerm) {
-            options.forEach(function(opt) {
-                opt.hidden = false;
-                opt.classList.remove('is-hidden');
-                opt.style.removeProperty('display');
-            });
-            if (emptyMsg) emptyMsg.style.display = 'none';
-            return;
-        }
-
-        const normQuery = normalizeSearchText(rawTerm);
-        const terms = normQuery.split(/\s+/).filter(Boolean);
+        const detailInput = form.querySelector('[data-cargo-kilometer-search]');
+        const groupInput = form.querySelector('[data-cargo-group-search]');
+        const detailTerms = normalizeSearchText(detailInput?.value).split(/\s+/).filter(Boolean);
+        const groupTerms = normalizeSearchText(groupInput?.value).split(/\s+/).filter(Boolean);
         let visibleCount = 0;
 
         options.forEach(function(opt) {
             const searchKey = opt.dataset.search || '';
-            const matched = terms.every(function(t) {
-                return searchKey.includes(t);
-            });
+            const groupName = normalizeSearchText(opt.dataset.groupName);
+            const matchesDetails = detailTerms.every((term) => searchKey.includes(term));
+            const matchesGroup = groupTerms.every((term) => groupName.includes(term));
+            const matched = matchesDetails && matchesGroup;
 
             opt.hidden = !matched;
             if (matched) {
@@ -223,9 +210,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        if (emptyMsg) {
-            emptyMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-        }
+        if (emptyMsg) emptyMsg.style.display = visibleCount === 0 && (detailTerms.length || groupTerms.length) ? 'block' : 'none';
+    };
+
+    document.addEventListener('input', function(event) {
+        const input = event.target;
+        if (!input || !input.matches('[data-cargo-kilometer-search], [data-cargo-group-search]')) return;
+        const form = input.closest('.cargo-delivery-form');
+        if (form) filterGroupOptions(form);
     });
 
     document.addEventListener('change', async function(e) {
@@ -281,12 +273,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const resetSearch = function() {
             if (!form) return;
+            form.querySelectorAll('[data-cargo-group-search]').forEach(function(input) {
+                input.value = '';
+            });
             form.querySelectorAll('.cargo-kilometer-option').forEach(function(opt) {
                 opt.hidden = false;
                 opt.classList.remove('is-hidden');
                 opt.style.removeProperty('display');
             });
             form.querySelectorAll('[data-cargo-kilometer-search]').forEach(function(inp) {
+                inp.value = '';
+            });
+            form.querySelectorAll('[data-cargo-group-search]').forEach(function(inp) {
                 inp.value = '';
             });
             const emptyMsg = form.querySelector('.cargo-kilometer-empty');
@@ -351,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // 1. Show success alert inside modal
                         if (alertDiv) {
                             alertDiv.className = 'cargo-form-alert alert alert-success';
-                            alertDiv.innerHTML = '✓ ' + (result.message || 'Đã lưu thông tin chở hàng thành công!') + ' Dữ liệu đã được thêm ngoài danh sách.';
+                            alertDiv.textContent = '✓ ' + (result.message || 'Đã thêm thông tin chở hàng thành công.');
                             alertDiv.style.display = 'block';
                         }
 
@@ -444,6 +442,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (noteInput) noteInput.value = btn.dataset.note || '';
 
             // Reset search in edit modal
+            editForm.querySelectorAll('[data-cargo-group-search]').forEach(function(inp) {
+                inp.value = '';
+            });
             editForm.querySelectorAll('[data-cargo-kilometer-search]').forEach(function(inp) {
                 inp.value = '';
             });

@@ -89,19 +89,20 @@ class CargoDeliveryController extends Controller
             action: 'create',
             subject: $cargoDelivery,
         );
+        $successMessage = 'Đã thêm thông tin chở hàng thành công. Dữ liệu đã được thêm ngoài danh sách - ' . now()->format('d/m/Y H:i:s');
 
         if ($request->expectsJson() || $request->ajax()) {
             $cargoDelivery->load(['employee', 'kilometer']);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Đã thêm thông tin chở hàng thành công.',
+                'message' => $successMessage,
                 'delivery' => $cargoDelivery,
                 'row_html' => view('cargo-deliveries._row', ['delivery' => $cargoDelivery])->render(),
             ]);
         }
 
-        return to_route('cargo-deliveries.index')->with('status', 'Đã thêm thông tin chở hàng.');
+        return to_route('cargo-deliveries.index')->with('status', $successMessage);
     }
 
     public function update(Request $request, CargoDelivery $cargoDelivery): RedirectResponse
