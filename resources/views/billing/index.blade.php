@@ -253,7 +253,7 @@
                         @if (count($dailySummaries) > 0)
                             <tfoot>
                                 <tr class="table-total-row">
-                                    <th colspan="3" class="text-center">TỔNG CỘNG ({{ $totals['total_days'] }} ngày)</th>
+                                    <th colspan="3" class="text-center">TỔNG CỘNG ({{ $totals['total_days'] }}) ngày</th>
                                     <th class="number-cell">{{ $totals['total_trips'] }} chuyến</th>
                                     <th class="number-cell">{{ $totals['total_orders'] }} đơn</th>
                                     <th>—</th>
