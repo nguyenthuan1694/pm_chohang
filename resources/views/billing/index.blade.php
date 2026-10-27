@@ -12,14 +12,9 @@
         </div>
         <div class="billing-heading-actions">
             @if(count($dailySummaries) > 0)
-                <div class="btn-group">
-                    <a href="{{ route('billing.export', array_merge(request()->query(), ['mode' => 'standard'])) }}" class="btn btn-success btn-sm export-btn" title="Xuất file Excel chuẩn theo BANG TINH CHANH VA KILOMET (Gồm Sheet GỐC và Sheet riêng cho từng nhân viên)">
-                        <span aria-hidden="true">📊</span> Xuất Excel (Bảng Tính Chành & KM)
-                    </a>
-                    <a href="{{ route('billing.export', array_merge(request()->query(), ['mode' => 'daily'])) }}" class="btn btn-outline-success btn-sm export-btn" title="Xuất file Excel tổng hợp theo ngày">
-                        <span aria-hidden="true">📋</span> Xuất Excel (Theo ngày)
-                    </a>
-                </div>
+                <a href="{{ route('billing.export', array_merge(request()->query(), ['mode' => 'standard'])) }}" class="btn btn-success btn-sm export-btn" title="Xuất file Excel chuẩn theo BANG TINH CHANH VA KILOMET (Gồm Sheet GỐC và Sheet riêng cho từng nhân viên)">
+                    <span aria-hidden="true">📊</span> Xuất Excel (Bảng Tính Chành & KM)
+                </a>
             @endif
         </div>
     </div>

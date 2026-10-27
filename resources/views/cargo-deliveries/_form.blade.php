@@ -49,7 +49,10 @@
     <div class="cargo-selection-section">
         <div class="cargo-selection-heading">
             <div><span class="panel-kicker">Active group source</span><h3>THÔNG TIN DANH SÁCH GIAO HÀNG</h3></div>
-            <input type="search" class="cargo-kilometer-search" placeholder="Tìm tên xuất phiếu, nhóm, địa chỉ, quận, ghi bao..." data-cargo-kilometer-search>
+            <div class="cargo-group-searches">
+                <input type="search" class="cargo-kilometer-search" placeholder="Tìm tên xuất phiếu, địa chỉ, quận, ghi bao..." data-cargo-kilometer-search autocomplete="off">
+                <input type="search" class="cargo-kilometer-search cargo-group-search-input" placeholder="Tìm theo nhóm..." data-cargo-group-search autocomplete="off" aria-label="Tìm theo nhóm">
+            </div>
         </div>
         <div class="cargo-kilometer-table-wrap">
             <div class="cargo-kilometer-scroll-pane">
@@ -67,7 +70,7 @@
                 </div>
                 <div class="cargo-kilometer-list">
                     @foreach ($groups as $groupOption)
-                        <label class="cargo-kilometer-option" data-search="{{ $groupOption->search_key }}">
+                        <label class="cargo-kilometer-option" data-search="{{ $groupOption->search_key }}" data-group-name="{{ $groupOption->group_name }}">
                             <input type="radio" name="group_id" value="{{ $groupOption->id }}" @checked($isEditing && (string) old('group_id', $delivery?->group_id) === (string) $groupOption->id) required>
                             <span>{{ $groupOption->group_date->format('d/m/Y H:i') }}</span>
                             <strong class="cargo-option-invoice" title="{{ $groupOption->invoice_name }}">{{ $groupOption->invoice_name ?: '—' }}</strong>

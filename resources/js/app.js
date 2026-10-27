@@ -147,6 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
 				input.value = '';
 			});
 
+			form.querySelectorAll('[data-cargo-group-search]').forEach((input) => {
+				input.value = '';
+			});
+
 			const emptyMsg = form.querySelector('.cargo-kilometer-empty');
 			if (emptyMsg) {
 				emptyMsg.style.display = 'none';
